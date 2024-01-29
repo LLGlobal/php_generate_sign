@@ -18,6 +18,24 @@ class Lianlianpayment
         $this->authorization = "Basic " . base64_encode($this->LL_DEVELOPER_ID . ':' . $this->LL_ACCESS_TOKEN);
     }
 
+    public function payout($order)
+    {
+        $payload = [
+            'request_id' => strval($order['number']),
+            'business_order_id' => strval($order['number']),
+            'account_id' => strval($order['number']),
+            'pay_currency' => 'USD',
+            'pay_amount' => '12.26',
+            'purpose' => 'purpose'
+        ];
+
+        $URI = '/gateway/v1/ew-payouts';
+        $requestUrl = $this->LL_API_URL . $URI;
+        $header = $this->makeHeaderStr(time(), $URI, json_encode($payload), '', 'POST');
+        $res = $this->curl($requestUrl, json_encode($payload), true, $header);
+        return json_decode($res, 1);
+    }
+
     public function balances()
     {
 
@@ -28,9 +46,9 @@ class Lianlianpayment
         return json_decode($res, 1);
     }
 
-    private function makeHeaderStr($t, $URI, $PAYLOAD_json = '', $QUERY_STRING_urlencode = '')
+    private function makeHeaderStr($t, $URI, $PAYLOAD_json = '', $QUERY_STRING_urlencode = '', $method = 'GET')
     {
-        $v = $this->makeSignatureValue($t, $URI, $PAYLOAD_json, $QUERY_STRING_urlencode);
+        $v = $this->makeSignatureValue($t, $URI, $PAYLOAD_json, $QUERY_STRING_urlencode, $method);
         $header = [
             'Content-Type: application/json',
             'Authorization:' . $this->authorization,
